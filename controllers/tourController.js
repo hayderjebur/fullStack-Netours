@@ -1,15 +1,39 @@
 const Tour = require('../models/tourModel');
+const APIFeatures = require('./../utils/apiFeatures');
+
+//Middleware to get 5 top
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
+};
 
 //Get all tours
 exports.getAllTours = async (req, res) => {
-  const tours = await Tour.find({});
-  res.status(200).json({
-    status: 'success',
-    result: tours.length,
-    data: {
-      tours
-    }
-  });
+  try {
+    // EXECUTE QUERY
+    const features = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    const tours = await features.query;
+
+    // SEND RESPONSE
+    res.status(200).json({
+      status: 'success',
+      results: tours.length,
+      data: {
+        tours
+      }
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err
+    });
+  }
 };
 
 //Get tour by ID
