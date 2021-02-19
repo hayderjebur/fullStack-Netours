@@ -69,6 +69,7 @@ userSchema.pre('save', function(next) {
 
 userSchema.pre(/^find/, function(next) {
   // this points to the current query
+  // this middleware will be active before any "find" query
   this.find({ active: { $ne: false } });
   next();
 });
